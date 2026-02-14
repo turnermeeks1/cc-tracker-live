@@ -1,0 +1,1094 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Credit Card Benefits Tracker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 15px;
+            color: #333;
+        }
+
+        .app-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 25px;
+        }
+
+        .header h1 {
+            font-size: 1.8rem;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .filter-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            overflow-x: auto;
+        }
+
+        .filter-tab {
+            background: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: all 0.3s;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .filter-tab:active {
+            transform: scale(0.95);
+        }
+
+        .filter-tab.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .cards-grid {
+            display: grid;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+
+        .card.hidden {
+            display: none;
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 18px;
+            padding-bottom: 14px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .card-icon {
+            width: 45px;
+            height: 45px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: bold;
+            color: white;
+            flex-shrink: 0;
+        }
+
+        .card-title h3 {
+            font-size: 1.1rem;
+            color: #333;
+            margin-bottom: 3px;
+        }
+
+        .card-title p {
+            font-size: 0.8rem;
+            color: #666;
+        }
+
+        .benefits-list {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .benefit-item {
+            background: #f8f9fa;
+            padding: 14px;
+            border-radius: 12px;
+        }
+
+        .benefit-item.hidden {
+            display: none;
+        }
+
+        .benefit-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 10px;
+            gap: 10px;
+        }
+
+        .benefit-name {
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: #333;
+            flex: 1;
+        }
+
+        .benefit-deadline {
+            font-size: 0.75rem;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-weight: 500;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .frequency-badge {
+            font-size: 0.7rem;
+            padding: 3px 8px;
+            border-radius: 10px;
+            font-weight: 500;
+            margin-left: 6px;
+            display: inline-block;
+        }
+
+        .frequency-monthly {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .frequency-annual {
+            background: #f3e5f5;
+            color: #7b1fa2;
+        }
+
+        .deadline-soon {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .deadline-expired {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .deadline-ok {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .benefit-description {
+            font-size: 0.8rem;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .benefit-progress {
+            margin-top: 10px;
+        }
+
+        .progress-bar-container {
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 8px;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            border-radius: 4px;
+            transition: width 0.3s;
+        }
+
+        .progress-text {
+            font-size: 0.8rem;
+            color: #666;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .benefit-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 6px;
+            margin-top: 12px;
+        }
+
+        .btn {
+            padding: 10px 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn:active {
+            transform: scale(0.95);
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #e0e0e0;
+            color: #333;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: white;
+            font-size: 1rem;
+        }
+
+        .data-controls {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            margin-top: 25px;
+        }
+
+        .data-controls h3 {
+            margin-bottom: 15px;
+            color: #333;
+            font-size: 1rem;
+        }
+
+        .data-controls .btn-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: white;
+            border-radius: 16px;
+            padding: 25px;
+            max-width: 400px;
+            width: 100%;
+            max-height: 85vh;
+            overflow-y: auto;
+        }
+
+        .modal h2 {
+            margin-bottom: 20px;
+            color: #333;
+            font-size: 1.3rem;
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 500;
+            color: #333;
+            font-size: 0.9rem;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+
+        .modal-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .alert {
+            background: #d4edda;
+            color: #155724;
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            display: none;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.9rem;
+        }
+
+        .alert.active {
+            display: flex;
+        }
+
+        .alert-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #155724;
+            padding: 0;
+            line-height: 1;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .value-analysis-container {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .value-summary {
+            text-align: center;
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .value-summary h2 {
+            font-size: 1.3rem;
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .portfolio-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .stat-box {
+            text-align: center;
+            padding: 12px;
+            background: #f8f9fa;
+            border-radius: 12px;
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: #666;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-value {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .stat-value.positive {
+            color: #28a745;
+        }
+
+        .stat-value.negative {
+            color: #dc3545;
+        }
+
+        .value-card {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+            border-left: 4px solid #ccc;
+        }
+
+        .value-card.profitable {
+            border-left-color: #28a745;
+            background: #f1f9f3;
+        }
+
+        .value-card.break-even {
+            border-left-color: #ffc107;
+            background: #fffbf0;
+        }
+
+        .value-card.losing {
+            border-left-color: #dc3545;
+            background: #fef5f5;
+        }
+
+        .value-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .value-card-title {
+            font-weight: 600;
+            font-size: 1rem;
+            color: #333;
+        }
+
+        .roi-badge {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .roi-badge.positive {
+            background: #28a745;
+            color: white;
+        }
+
+        .roi-badge.break-even {
+            background: #ffc107;
+            color: #333;
+        }
+
+        .roi-badge.negative {
+            background: #dc3545;
+            color: white;
+        }
+
+        .value-breakdown {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            font-size: 0.85rem;
+        }
+
+        .value-item {
+            text-align: center;
+        }
+
+        .value-item-label {
+            color: #666;
+            font-size: 0.75rem;
+            margin-bottom: 3px;
+        }
+
+        .value-item-amount {
+            font-weight: 600;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <div class="header">
+            <h1>💳 Credit Card Benefits</h1>
+            <p>Track your benefits and never miss a perk</p>
+        </div>
+
+        <div id="alert" class="alert">
+            <span id="alert-text">✓ Updated!</span>
+            <button class="alert-close" onclick="hideAlert()">×</button>
+        </div>
+
+        <div class="filter-tabs">
+            <button class="filter-tab active" onclick="setFilter('all')">All Benefits</button>
+            <button class="filter-tab" onclick="setFilter('value')">💰 Value Analysis</button>
+            <button class="filter-tab" onclick="setFilter('monthly')">Monthly</button>
+            <button class="filter-tab" onclick="setFilter('annual')">Annual</button>
+            <button class="filter-tab" onclick="setFilter('expiring')">Expiring Soon</button>
+            <button class="filter-tab" onclick="setFilter('unused')">Unused</button>
+            <button class="filter-tab" onclick="setFilter('travel')">Travel</button>
+            <button class="filter-tab" onclick="setFilter('dining')">Dining</button>
+            <button class="filter-tab" onclick="setFilter('hotel')">Hotel</button>
+        </div>
+
+        <div class="cards-grid" id="cards-grid"></div>
+
+        <div class="data-controls">
+            <h3>Data Management</h3>
+            <div class="btn-group">
+                <button class="btn btn-secondary" onclick="exportData()">Export Backup</button>
+                <label class="btn btn-secondary" style="cursor: pointer;">
+                    Import Backup
+                    <input type="file" accept=".json" onchange="importData(event)" style="display: none;">
+                </label>
+                <button class="btn btn-danger" onclick="resetAll()">Reset All</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal" class="modal-overlay" onclick="closeModal(event)">
+        <div class="modal" onclick="event.stopPropagation()">
+            <h2>Edit Benefit</h2>
+            <div class="form-group">
+                <label>Benefit Name</label>
+                <input type="text" id="modal-name" disabled>
+            </div>
+            <div class="form-group">
+                <label>Amount Used</label>
+                <input type="number" id="modal-used">
+            </div>
+            <div class="form-group">
+                <label>Total Amount</label>
+                <input type="number" id="modal-total">
+            </div>
+            <div class="form-group">
+                <label>Reset Date</label>
+                <input type="date" id="modal-date">
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="saveBenefit()">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentFilter = 'all';
+        let cards = [];
+        let editingCardId = null;
+        let editingBenefitId = null;
+
+        const initialData = [
+            {
+                id: 'csr',
+                name: 'Chase Sapphire Reserve',
+                issuer: 'Chase',
+                color: '#1a1a2e',
+                annualFee: 550,
+                benefits: [
+                    { id: 'csr-travel-credit', name: '$300 Annual Travel Credit', type: 'credit', total: 300, used: 0, resetDate: '2025-12-31', category: 'travel', frequency: 'annual' },
+                    { id: 'csr-lounge', name: 'Priority Pass Lounge Access', type: 'unlimited', description: 'Unlimited visits', category: 'travel', frequency: 'ongoing' },
+                    { id: 'csr-doordash', name: 'DoorDash DashPass', type: 'credit', total: 10, used: 0, resetDate: '2026-03-01', description: '$10/month statement credit', category: 'dining', frequency: 'monthly', lastReset: '2026-02-01' },
+                    { id: 'csr-lyft', name: 'Lyft Pink', type: 'benefit', description: 'Complimentary membership', category: 'travel', frequency: 'ongoing' }
+                ]
+            },
+            {
+                id: 'marriott',
+                name: 'Marriott Bonvoy',
+                issuer: 'Chase',
+                color: '#8b4789',
+                annualFee: 95,
+                benefits: [
+                    { id: 'marriott-night', name: 'Free Night Award', type: 'counter', total: 1, used: 0, resetDate: '2025-12-31', description: 'Up to 50,000 points', category: 'hotel', frequency: 'annual' },
+                    { id: 'marriott-elite', name: 'Silver Elite Status', type: 'benefit', description: 'Automatic enrollment', category: 'hotel', frequency: 'ongoing' },
+                    { id: 'marriott-nights', name: 'Elite Night Credits', type: 'counter', total: 15, used: 0, resetDate: '2025-12-31', description: 'Annual elite nights', category: 'hotel', frequency: 'annual' }
+                ]
+            },
+            {
+                id: 'amex-gold',
+                name: 'AMEX Gold',
+                issuer: 'American Express',
+                color: '#d4af37',
+                annualFee: 325,
+                benefits: [
+                    { id: 'amex-dining', name: 'Dining Credit', type: 'credit', total: 10, used: 0, resetDate: '2026-03-01', description: '$10/month at Grubhub, etc.', category: 'dining', frequency: 'monthly', lastReset: '2026-02-01' },
+                    { id: 'amex-uber', name: 'Uber Cash', type: 'credit', total: 10, used: 0, resetDate: '2026-03-01', description: '$10/month Uber credit', category: 'travel', frequency: 'monthly', lastReset: '2026-02-01' },
+                    { id: 'amex-4x-dining', name: '4x Points at Restaurants', type: 'benefit', description: 'Worldwide', category: 'dining', frequency: 'ongoing' },
+                    { id: 'amex-4x-groceries', name: '4x Points at Groceries', type: 'benefit', description: 'Up to $25k/year', category: 'shopping', frequency: 'ongoing' }
+                ]
+            },
+            {
+                id: 'venture',
+                name: 'Capital One Venture',
+                issuer: 'Capital One',
+                color: '#e31c26',
+                annualFee: 95,
+                benefits: [
+                    { id: 'venture-miles', name: '2x Miles Everywhere', type: 'benefit', description: 'On every purchase', category: 'rewards', frequency: 'ongoing' },
+                    { id: 'venture-transfer', name: 'Transfer Partners', type: 'benefit', description: '15+ airline partners', category: 'rewards', frequency: 'ongoing' }
+                ]
+            },
+            {
+                id: 'venture-x',
+                name: 'Capital One Venture X',
+                issuer: 'Capital One',
+                color: '#0f1318',
+                annualFee: 395,
+                benefits: [
+                    { id: 'vx-travel-credit', name: '$300 Annual Travel Credit', type: 'credit', total: 300, used: 0, resetDate: '2025-12-31', category: 'travel', frequency: 'annual' },
+                    { id: 'vx-experience', name: '$100 Capital One Experience Credit', type: 'credit', total: 100, used: 0, resetDate: '2025-12-31', category: 'entertainment', frequency: 'annual' },
+                    { id: 'vx-lounge', name: 'Priority Pass & Plaza Premium', type: 'unlimited', description: 'Unlimited lounge access', category: 'travel', frequency: 'ongoing' },
+                    { id: 'vx-anniversary', name: 'Anniversary Bonus', type: 'counter', total: 10000, used: 0, resetDate: '2025-12-31', description: '10,000 miles annually', category: 'rewards', frequency: 'annual' },
+                    { id: 'vx-hertz', name: 'Hertz President\'s Circle', type: 'benefit', description: 'Elite status', category: 'travel', frequency: 'ongoing' }
+                ]
+            }
+        ];
+
+        function init() {
+            loadData();
+            checkMonthlyResets();
+            render();
+        }
+
+        function loadData() {
+            const saved = localStorage.getItem('creditCardBenefits');
+            if (saved) {
+                const savedData = JSON.parse(saved);
+                // Check if data needs migration (old format without frequency)
+                const needsMigration = savedData.some(card => 
+                    card.benefits.some(b => !b.frequency)
+                );
+                
+                if (needsMigration) {
+                    // Clear old data and use new structure
+                    cards = initialData;
+                    saveData();
+                    showAlert('App updated with monthly tracking!');
+                } else {
+                    cards = savedData;
+                }
+            } else {
+                cards = initialData;
+                saveData();
+            }
+        }
+
+        function checkMonthlyResets() {
+            const today = new Date();
+            const currentMonth = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0');
+            let hasChanges = false;
+
+            cards = cards.map(card => ({
+                ...card,
+                benefits: card.benefits.map(benefit => {
+                    if (benefit.frequency === 'monthly' && benefit.lastReset) {
+                        const lastResetMonth = benefit.lastReset.substring(0, 7);
+                        
+                        if (lastResetMonth !== currentMonth) {
+                            // Reset monthly benefit
+                            const nextMonth = new Date(today.getFullYear(), today.getMonth() + 1, 1);
+                            const resetDateStr = nextMonth.toISOString().split('T')[0];
+                            
+                            hasChanges = true;
+                            return {
+                                ...benefit,
+                                used: 0,
+                                lastReset: today.toISOString().split('T')[0],
+                                resetDate: resetDateStr
+                            };
+                        }
+                    }
+                    return benefit;
+                })
+            }));
+
+            if (hasChanges) {
+                saveData();
+                showAlert('Monthly benefits reset!');
+            }
+        }
+
+        function saveData() {
+            localStorage.setItem('creditCardBenefits', JSON.stringify(cards));
+        }
+
+        function getDaysUntilDeadline(resetDate) {
+            if (!resetDate) return null;
+            const today = new Date();
+            const deadline = new Date(resetDate);
+            const diffTime = deadline - today;
+            return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        }
+
+        function getDeadlineClass(resetDate) {
+            const days = getDaysUntilDeadline(resetDate);
+            if (days === null) return '';
+            if (days < 0) return 'deadline-expired';
+            if (days <= 30) return 'deadline-soon';
+            return 'deadline-ok';
+        }
+
+        function shouldShowBenefit(benefit) {
+            if (currentFilter === 'all') return true;
+            if (currentFilter === 'monthly') return benefit.frequency === 'monthly';
+            if (currentFilter === 'annual') return benefit.frequency === 'annual';
+            if (currentFilter === 'expiring') {
+                if (!benefit.resetDate) return false;
+                const days = getDaysUntilDeadline(benefit.resetDate);
+                return days <= 60 && days >= 0;
+            }
+            if (currentFilter === 'unused') {
+                return (benefit.type === 'credit' || benefit.type === 'counter') && benefit.used === 0;
+            }
+            return benefit.category === currentFilter;
+        }
+
+        function render() {
+            const grid = document.getElementById('cards-grid');
+            
+            if (currentFilter === 'value') {
+                grid.innerHTML = renderValueAnalysis();
+                return;
+            }
+            
+            let html = '';
+            let hasVisibleCards = false;
+
+            cards.forEach(card => {
+                const visibleBenefits = card.benefits.filter(shouldShowBenefit);
+                if (visibleBenefits.length === 0) return;
+                hasVisibleCards = true;
+
+                html += `
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-icon" style="background: ${card.color}">${card.name.charAt(0)}</div>
+                            <div class="card-title">
+                                <h3>${card.name}</h3>
+                                <p>${card.issuer}</p>
+                            </div>
+                        </div>
+                        <div class="benefits-list">
+                            ${visibleBenefits.map(b => renderBenefit(card.id, b)).join('')}
+                        </div>
+                    </div>
+                `;
+            });
+
+            grid.innerHTML = hasVisibleCards ? html : '<div class="empty-state">No benefits found for this filter</div>';
+        }
+
+        function renderBenefit(cardId, benefit) {
+            const days = getDaysUntilDeadline(benefit.resetDate);
+            const deadlineText = days !== null ? (days < 0 ? 'Expired' : days === 0 ? 'Today!' : days + 'd') : '';
+            const deadlineClass = getDeadlineClass(benefit.resetDate);
+
+            // Add frequency badge
+            let frequencyBadge = '';
+            if (benefit.frequency === 'monthly') {
+                frequencyBadge = '<span class="frequency-badge frequency-monthly">Monthly</span>';
+            } else if (benefit.frequency === 'annual') {
+                frequencyBadge = '<span class="frequency-badge frequency-annual">Annual</span>';
+            }
+
+            let content = '';
+            if (benefit.type === 'credit' || benefit.type === 'counter') {
+                const percentage = (benefit.used / benefit.total) * 100;
+                const remaining = benefit.total - benefit.used;
+                const isCredit = benefit.type === 'credit';
+                const increment = isCredit ? 10 : 1;
+
+                content = `
+                    ${benefit.description ? `<div class="benefit-description">${benefit.description}</div>` : ''}
+                    <div class="benefit-progress">
+                        <div class="progress-bar-container">
+                            <div class="progress-bar" style="width: ${percentage}%"></div>
+                        </div>
+                        <div class="progress-text">
+                            <span>${isCredit ? '$' : ''}${remaining} remaining</span>
+                            <span>${isCredit ? '$' : ''}${benefit.used} / ${isCredit ? '$' : ''}${benefit.total}</span>
+                        </div>
+                    </div>
+                    <div class="benefit-actions">
+                        <button class="btn btn-primary" onclick="increment('${cardId}', '${benefit.id}', ${increment})" ${benefit.used >= benefit.total ? 'disabled' : ''}>
+                            + ${isCredit ? '$' + increment : increment}
+                        </button>
+                        <button class="btn btn-secondary" onclick="editBenefit('${cardId}', '${benefit.id}')">Edit</button>
+                        <button class="btn btn-secondary" onclick="resetBenefit('${cardId}', '${benefit.id}')">Reset</button>
+                    </div>
+                `;
+            } else {
+                content = `<div class="benefit-description">${benefit.description}</div>`;
+            }
+
+            return `
+                <div class="benefit-item">
+                    <div class="benefit-header">
+                        <div class="benefit-name">
+                            ${benefit.name}
+                            ${frequencyBadge}
+                        </div>
+                        ${deadlineText ? `<div class="benefit-deadline ${deadlineClass}">${deadlineText}</div>` : ''}
+                    </div>
+                    ${content}
+                </div>
+            `;
+        }
+
+        function setFilter(filter) {
+            currentFilter = filter;
+            document.querySelectorAll('.filter-tab').forEach(tab => tab.classList.remove('active'));
+            event.target.classList.add('active');
+            render();
+        }
+
+        function renderValueAnalysis() {
+            // Calculate value for each card
+            const cardValues = cards.map(card => {
+                const benefitsUsed = card.benefits.reduce((sum, benefit) => {
+                    if (benefit.type === 'credit' || benefit.type === 'counter') {
+                        return sum + benefit.used;
+                    }
+                    return sum;
+                }, 0);
+                
+                const netValue = benefitsUsed - card.annualFee;
+                const roi = card.annualFee > 0 ? ((benefitsUsed / card.annualFee) * 100).toFixed(0) : 0;
+                
+                return {
+                    ...card,
+                    benefitsUsed,
+                    netValue,
+                    roi: parseInt(roi)
+                };
+            });
+
+            // Sort by net value (best ROI first)
+            cardValues.sort((a, b) => b.netValue - a.netValue);
+
+            // Calculate portfolio totals
+            const totalFees = cardValues.reduce((sum, c) => sum + c.annualFee, 0);
+            const totalBenefitsUsed = cardValues.reduce((sum, c) => sum + c.benefitsUsed, 0);
+            const totalNetValue = totalBenefitsUsed - totalFees;
+
+            return `
+                <div class="value-analysis-container">
+                    <div class="value-summary">
+                        <h2>Portfolio Value Analysis</h2>
+                        <div class="portfolio-stats">
+                            <div class="stat-box">
+                                <div class="stat-label">Total Fees</div>
+                                <div class="stat-value">$${totalFees}</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-label">Benefits Used</div>
+                                <div class="stat-value positive">$${totalBenefitsUsed}</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-label">Net Value</div>
+                                <div class="stat-value ${totalNetValue >= 0 ? 'positive' : 'negative'}">
+                                    ${totalNetValue >= 0 ? '+' : ''}$${totalNetValue}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    ${cardValues.map(card => {
+                        let statusClass = 'losing';
+                        let roiBadgeClass = 'negative';
+                        let statusEmoji = '🔴';
+                        
+                        if (card.netValue > 50) {
+                            statusClass = 'profitable';
+                            roiBadgeClass = 'positive';
+                            statusEmoji = '✅';
+                        } else if (card.netValue >= -50 && card.netValue <= 50) {
+                            statusClass = 'break-even';
+                            roiBadgeClass = 'break-even';
+                            statusEmoji = '⚠️';
+                        }
+
+                        return `
+                            <div class="value-card ${statusClass}">
+                                <div class="value-card-header">
+                                    <div class="value-card-title">${statusEmoji} ${card.name}</div>
+                                    <div class="roi-badge ${roiBadgeClass}">${card.roi}% ROI</div>
+                                </div>
+                                <div class="value-breakdown">
+                                    <div class="value-item">
+                                        <div class="value-item-label">Annual Fee</div>
+                                        <div class="value-item-amount">$${card.annualFee}</div>
+                                    </div>
+                                    <div class="value-item">
+                                        <div class="value-item-label">Benefits Used</div>
+                                        <div class="value-item-amount" style="color: #28a745;">$${card.benefitsUsed}</div>
+                                    </div>
+                                    <div class="value-item">
+                                        <div class="value-item-label">Net Value</div>
+                                        <div class="value-item-amount" style="color: ${card.netValue >= 0 ? '#28a745' : '#dc3545'};">
+                                            ${card.netValue >= 0 ? '+' : ''}$${card.netValue}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            `;
+        }
+
+        function increment(cardId, benefitId, amount) {
+            cards = cards.map(card => {
+                if (card.id === cardId) {
+                    return {
+                        ...card,
+                        benefits: card.benefits.map(benefit => {
+                            if (benefit.id === benefitId) {
+                                return { ...benefit, used: Math.min(benefit.used + amount, benefit.total) };
+                            }
+                            return benefit;
+                        })
+                    };
+                }
+                return card;
+            });
+            saveData();
+            render();
+            showAlert('Updated!');
+        }
+
+        function resetBenefit(cardId, benefitId) {
+            cards = cards.map(card => {
+                if (card.id === cardId) {
+                    return {
+                        ...card,
+                        benefits: card.benefits.map(benefit => 
+                            benefit.id === benefitId ? { ...benefit, used: 0 } : benefit
+                        )
+                    };
+                }
+                return card;
+            });
+            saveData();
+            render();
+            showAlert('Benefit reset!');
+        }
+
+        function editBenefit(cardId, benefitId) {
+            const card = cards.find(c => c.id === cardId);
+            const benefit = card.benefits.find(b => b.id === benefitId);
+            
+            editingCardId = cardId;
+            editingBenefitId = benefitId;
+            
+            document.getElementById('modal-name').value = benefit.name;
+            document.getElementById('modal-used').value = benefit.used || 0;
+            document.getElementById('modal-total').value = benefit.total || 0;
+            document.getElementById('modal-date').value = benefit.resetDate || '';
+            document.getElementById('modal').classList.add('active');
+        }
+
+        function saveBenefit() {
+            const used = parseInt(document.getElementById('modal-used').value);
+            const total = parseInt(document.getElementById('modal-total').value);
+            const resetDate = document.getElementById('modal-date').value;
+
+            cards = cards.map(card => {
+                if (card.id === editingCardId) {
+                    return {
+                        ...card,
+                        benefits: card.benefits.map(benefit => 
+                            benefit.id === editingBenefitId ? { ...benefit, used, total, resetDate } : benefit
+                        )
+                    };
+                }
+                return card;
+            });
+
+            saveData();
+            closeModal();
+            render();
+            showAlert('Changes saved!');
+        }
+
+        function closeModal(event) {
+            if (!event || event.target.id === 'modal') {
+                document.getElementById('modal').classList.remove('active');
+            }
+        }
+
+        function showAlert(message) {
+            document.getElementById('alert-text').textContent = '✓ ' + message;
+            document.getElementById('alert').classList.add('active');
+            setTimeout(() => document.getElementById('alert').classList.remove('active'), 3000);
+        }
+
+        function hideAlert() {
+            document.getElementById('alert').classList.remove('active');
+        }
+
+        function resetAll() {
+            if (confirm('Reset all benefits to zero? This cannot be undone.')) {
+                cards = cards.map(card => ({
+                    ...card,
+                    benefits: card.benefits.map(benefit => ({ ...benefit, used: 0 }))
+                }));
+                saveData();
+                render();
+                showAlert('All benefits reset!');
+            }
+        }
+
+        function exportData() {
+            const dataStr = JSON.stringify(cards, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'credit-card-benefits-backup.json';
+            link.click();
+            showAlert('Data exported!');
+        }
+
+        function importData(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        cards = JSON.parse(e.target.result);
+                        saveData();
+                        render();
+                        showAlert('Data imported successfully!');
+                    } catch (error) {
+                        alert('Error importing file. Please check the format.');
+                    }
+                };
+                reader.readAsText(file);
+            }
+        }
+
+        // Initialize on load
+        init();
+    </script>
+</body>
+</html>
